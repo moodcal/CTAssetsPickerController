@@ -29,7 +29,6 @@
 #import <Photos/Photos.h>
 
 
-NS_ASSUME_NONNULL_BEGIN
 
 @protocol CTAssetsPickerControllerDelegate;
 
@@ -49,7 +48,7 @@ NS_ASSUME_NONNULL_BEGIN
  *  You can specify which albums and their order to be shown in the picker by creating an `NSArray` of `NSNumber`
  *  that containing the value of `PHAssetCollectionSubtype`.
  */
-@property (nonatomic, copy) NSArray<NSNumber*> *assetCollectionSubtypes;
+@property (nonatomic, copy) NSArray *assetCollectionSubtypes;
 
 /**
  *  Set the `defaultAssetCollection` to specify which asset collection (album) is the default asset collection.
@@ -85,6 +84,9 @@ NS_ASSUME_NONNULL_BEGIN
  *  You can use this property to select assets initially when presenting the picker.
  */
 @property (nonatomic, strong) NSMutableArray *selectedAssets;
+
+@property (nonatomic, weak) NSMutableArray *dailyAssets;
+@property (nonatomic, strong) NSDate *birth;
 
 /**
  *  An optional title for the done button
@@ -196,7 +198,7 @@ NS_ASSUME_NONNULL_BEGIN
  *
  *  @see assetsPickerControllerDidCancel:
  */
-- (void)assetsPickerController:(CTAssetsPickerController *)picker didFinishPickingAssets:(NSArray<PHAsset*> *)assets;
+- (void)assetsPickerController:(CTAssetsPickerController *)picker didFinishPickingAssets:(NSArray *)assets;
 
 @optional
 
@@ -341,6 +343,9 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)assetsPickerController:(CTAssetsPickerController *)picker didUnhighlightAsset:(PHAsset *)asset;
 
 
+- (NSString *)dateStrForDate:(NSDate *)date;
+
+- (NSString *)ageStrForDate:(NSDate *)date;
 
 
 /**
@@ -370,5 +375,3 @@ extern NSString * const CTAssetsPickerDidDeselectAssetNotification;
 
 
 @end
-
-NS_ASSUME_NONNULL_END
