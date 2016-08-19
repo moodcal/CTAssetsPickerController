@@ -16,6 +16,8 @@
 "%@ Photos" = "%@ 張照片";
 "%@ Videos" = "%@ 部影片";
 "%@ Photos, %@ Videos" = "%1$@ 張照片、%2$@ 部影片";
+"Long press to preview" = "长按照片可预览";
+"Max 9 photos for one day" = "一天最多选9张照片";
 
 /* Assets index */
 "%@ of %@" = "%1$@/%2$@";

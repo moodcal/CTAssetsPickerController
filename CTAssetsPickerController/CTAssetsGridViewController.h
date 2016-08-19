@@ -34,7 +34,7 @@
 
 @protocol CTAssetsGridViewControllerDelegate <NSObject>
 
-- (void)assetsGridViewController:(nonnull CTAssetsGridViewController *)picker photoLibraryDidChangeForAssetCollection:(nonnull PHAssetCollection *)assetCollection;
+- (void)assetsGridViewController:(CTAssetsGridViewController *)picker photoLibraryDidChangeForAssetCollection:(PHAssetCollection *)assetCollection;
 
 @end
 
@@ -43,7 +43,10 @@
 @interface CTAssetsGridViewController : UICollectionViewController
 
 @property (nonatomic, weak) id<CTAssetsGridViewControllerDelegate> delegate;
-@property (nonatomic, strong, nonnull) PHAssetCollection *assetCollection;
+@property (nonatomic, strong) PHAssetCollection *assetCollection;
+
+- (NSIndexPath *)indexPathForIndex:(NSInteger)index;
+- (NSInteger)indexForIndexPath:(NSIndexPath *)indexPath;
 
 @end
 

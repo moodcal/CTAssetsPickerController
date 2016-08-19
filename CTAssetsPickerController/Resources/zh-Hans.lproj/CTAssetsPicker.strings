@@ -16,9 +16,11 @@
 "%@ Photos" = "%@张照片";
 "%@ Videos" = "%@个视频";
 "%@ Photos, %@ Videos" = "%1$@张照片，%2$@个视频";
+"Long press to preview" = "长按照片可预览";
+"Max 9 photos for one day" = "一天最多选9张照片";
 
 /* Assets index */
-"%@ of %@" = "%1$@，共%2$@";
+"%@ of %@" = "%1$@ / %2$@";
 
 /* Messages if privacy is not granted */
 "This app does not have access to your photos or videos." = "此应用程序对您的照片或视频没有访问权。";

@@ -81,7 +81,7 @@
     disabledImage = [disabledImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     UIImageView *disabledImageView = [[UIImageView alloc] initWithImage:disabledImage];
     disabledImageView.tintColor = CTAssetsPikcerThumbnailTintColor;
-    self.disabledImageView = disabledImageView;
+//    self.disabledImageView = disabledImageView;
     
     UIView *disabledView = [UIView newAutoLayoutView];
     disabledView.backgroundColor = CTAssetsGridViewCellDisabledColor;
@@ -137,13 +137,13 @@
 
 - (void)setHighlighted:(BOOL)highlighted
 {
-    super.highlighted = highlighted;
+    [super setHighlighted:highlighted];
     self.highlightedView.hidden = !highlighted;
 }
 
 - (void)setSelected:(BOOL)selected
 {
-    super.selected = selected;
+    [super setSelected:selected];
     self.selectedView.hidden = !selected;
 }
 

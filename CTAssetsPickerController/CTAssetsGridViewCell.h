@@ -36,9 +36,9 @@
 @property (nonatomic, assign) BOOL showsSelectionIndex;
 @property (nonatomic, assign) NSUInteger selectionIndex;
 
-@property (nonatomic, weak, nullable) UIColor *disabledColor UI_APPEARANCE_SELECTOR;
-@property (nonatomic, weak, nullable) UIColor *highlightedColor UI_APPEARANCE_SELECTOR;
+@property (nonatomic, weak) UIColor *disabledColor UI_APPEARANCE_SELECTOR;
+@property (nonatomic, weak) UIColor *highlightedColor UI_APPEARANCE_SELECTOR;
 
-- (void)bind:(nonnull PHAsset *)asset;
+- (void)bind:(PHAsset *)asset;
 
 @end

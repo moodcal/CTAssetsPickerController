@@ -24,46 +24,45 @@
  
  */
 
-/* Default size */
+/* Default Size */
 
-#define CTAssetCollectionThumbnailLengh             70.0f
-#define CTAssetCollectionThumbnailSize              CGSizeMake(CTAssetCollectionThumbnailLengh, CTAssetCollectionThumbnailLengh)
+#define CTAssetCollectionThumbnailLengh 70.0f
+#define CTAssetCollectionThumbnailSize CGSizeMake(CTAssetCollectionThumbnailLengh, CTAssetCollectionThumbnailLengh)
 
-#define CTAssetsPickerPopoverContentSize            CGSizeMake(695.0f, 580.0f)
+#define CTAssetsPickerPopoverContentSize CGSizeMake(695.0f, 580.0f)
 
 
 
-/* Default appearance */
+/* Default Appearance */
 
-#define CTAssetsPikcerAccessDeniedViewTextColor     [UIColor colorWithRed:129.0f/255.0f green:136.0f/255.0f blue:148.0f/255.0f alpha:1]
-#define CTAssetsPickerNoAssetsViewTextColor         [UIColor colorWithRed:153.0f/255.0f green:153.0f/255.0f blue:153.0f/255.0f alpha:1]
+#define CTAssetsPikcerAccessDeniedViewTextColor [UIColor colorWithRed:129.0f/255.0f green:136.0f/255.0f blue:148.0f/255.0f alpha:1]
+#define CTAssetsPickerNoAssetsViewTextColor     [UIColor colorWithRed:153.0f/255.0f green:153.0f/255.0f blue:153.0f/255.0f alpha:1]
 
-#define CTAssetsPikcerThumbnailTintColor            [UIColor colorWithRed:164.0f/255.0f green:164.0f/255.0f blue:164.0f/255.0f alpha:1]
-#define CTAssetsPikcerThumbnailBackgroundColor      [UIColor colorWithRed:235.0f/255.0f green:235.0f/255.0f blue:235.0f/255.0f alpha:1]
+#define CTAssetsPikcerThumbnailTintColor        [UIColor colorWithRed:164.0f/255.0f green:164.0f/255.0f blue:164.0f/255.0f alpha:1]
+#define CTAssetsPikcerThumbnailBackgroundColor  [UIColor colorWithRed:235.0f/255.0f green:235.0f/255.0f blue:235.0f/255.0f alpha:1]
 
-#define CTAssetCollectionViewCellTitleFont          [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
-#define CTAssetCollectionViewCellTitleTextColor     [UIColor darkTextColor]
-#define CTAssetCollectionViewCellCountFont          [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1]
-#define CTAssetCollectionViewCellCountTextColor     [UIColor darkTextColor]
-#define CTAssetCollectionViewCellAccessoryColor     [UIColor colorWithRed:187.0f/255.0f green:187.0f/255.0f blue:193.0f/255.0f alpha:1]
+#define CTAssetCollectionViewCellTitleFont      [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+#define CTAssetCollectionViewCellTitleTextColor [UIColor darkTextColor]
+#define CTAssetCollectionViewCellCountFont      [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1]
+#define CTAssetCollectionViewCellCountTextColor [UIColor darkTextColor]
+#define CTAssetCollectionViewCellAccessoryColor [UIColor colorWithRed:187.0f/255.0f green:187.0f/255.0f blue:193.0f/255.0f alpha:1]
 
-#define CTAssetsGridViewBackgroundColor             [UIColor whiteColor]
+#define CTAssetsGridViewBackgroundColor         [UIColor whiteColor]
 
-#define CTAssetsGridViewCellDisabledColor           [UIColor colorWithWhite:1 alpha:0.8]
-#define CTAssetsGridViewCellHighlightedColor        [UIColor colorWithWhite:0 alpha:0.5]
+#define CTAssetsGridViewCellDisabledColor       [UIColor colorWithWhite:1 alpha:0.6]
+#define CTAssetsGridViewCellHighlightedColor    [UIColor colorWithWhite:0 alpha:0.5]
 
-#define CTAssetsGridSelectedViewBackgroundColor     [UIColor colorWithWhite:1 alpha:0.3]
-#define CTAssetsGridSelectedViewTintColor           [UIView new].tintColor
+#define CTAssetsGridSelectedViewBackgroundColor [UIColor colorWithWhite:1 alpha:0.3]
+#define CTAssetsGridSelectedViewTintColor       [UIView new].tintColor
 
-#define CTAssetLabelSize                            CGSizeMake(25.0f, 25.0f)
-#define CTAssetLabelFont                            [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
-#define CTAssetLabelTextColor                       [UIColor whiteColor]
-#define CTAssetLabelBackgroundColor                 [UIView new].tintColor
-#define CTAssetLabelBorderColor                     [UIColor whiteColor]
+#define CTAssetLabelSize                        CGSizeMake(25.0f, 25.0f)
+#define CTAssetLabelFont                        [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+#define CTAssetLabelTextColor                   [UIColor whiteColor]
+#define CTAssetLabelBackgroundColor             [UIView new].tintColor
+#define CTAssetLabelBorderColor                 [UIColor whiteColor]
 
-#define CTAssetsGridViewFooterFont                  [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
-#define CTAssetsGridViewFooterTextColor             [UIColor darkTextColor]
+#define CTAssetsGridViewFooterFont              [UIFont preferredFontForTextStyle:UIFontTextStyleBody]
+#define CTAssetsGridViewFooterTextColor         [UIColor darkTextColor]
 
 #define CTAssetsPageViewPageBackgroundColor         [UIColor whiteColor]
 #define CTAssetsPageViewFullscreenBackgroundColor   [UIColor blackColor]
-

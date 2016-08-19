@@ -128,14 +128,16 @@
     if (photoCount > 0)
         numberOfPhotos = [nf ctassetsPickerStringFromAssetsCount:photoCount];
     
-    if (photoCount > 0 && videoCount > 0)
-        self.label.text = [NSString stringWithFormat:CTAssetsPickerLocalizedString(@"%@ Photos, %@ Videos", nil), numberOfPhotos, numberOfVideos];
-    else if (photoCount > 0 && videoCount <= 0)
-        self.label.text = [NSString stringWithFormat:CTAssetsPickerLocalizedString(@"%@ Photos", nil), numberOfPhotos];
-    else if (photoCount <= 0 && videoCount > 0)
-        self.label.text = [NSString stringWithFormat:CTAssetsPickerLocalizedString(@"%@ Videos", nil), numberOfVideos];
-    else
-        self.label.text = @"";
+//    if (photoCount > 0 && videoCount > 0)
+//        self.label.text = [NSString stringWithFormat:CTAssetsPickerLocalizedString(@"%@ Photos, %@ Videos", nil), numberOfPhotos, numberOfVideos];
+//    else if (photoCount > 0 && videoCount <= 0)
+//        self.label.text = [NSString stringWithFormat:CTAssetsPickerLocalizedString(@"%@ Photos", nil), numberOfPhotos];
+//    else if (photoCount <= 0 && videoCount > 0)
+//        self.label.text = [NSString stringWithFormat:CTAssetsPickerLocalizedString(@"%@ Videos", nil), numberOfVideos];
+//    else
+//        self.label.text = @"";
+    self.label.text = CTAssetsPickerLocalizedString(@"Long press to preview", nil);
+    self.label.textColor = [UIColor redColor];
     
     self.hidden = (result.count == 0);
     

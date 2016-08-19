@@ -31,6 +31,7 @@
 #import "CTAssetsGridView.h"
 #import "CTAssetsGridViewLayout.h"
 #import "CTAssetsGridViewCell.h"
+#import "CTAssetsGridViewHeader.h"
 #import "CTAssetsGridViewFooter.h"
 #import "CTAssetsPickerNoAssetsView.h"
 #import "CTAssetsPageViewController.h"
@@ -39,14 +40,12 @@
 #import "UICollectionView+CTAssetsPickerController.h"
 #import "NSIndexSet+CTAssetsPickerController.h"
 #import "NSBundle+CTAssetsPickerController.h"
-#import "PHImageManager+CTAssetsPickerController.h"
-
-
 
 
 
 NSString * const CTAssetsGridViewCellIdentifier = @"CTAssetsGridViewCellIdentifier";
 NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIdentifier";
+NSString * const CTAssetsGridViewHeaderIdentifier = @"CTAssetsGridViewHeaderIdentifier";
 
 
 @interface CTAssetsGridViewController ()
@@ -54,6 +53,8 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 @property (nonatomic, weak) CTAssetsPickerController *picker;
 @property (nonatomic, strong) PHFetchResult *fetchResult;
+@property (nonatomic, strong) NSMutableArray *groupedAssets;
+@property (nonatomic, strong) NSMutableDictionary *indexPathsForAsset;
 @property (nonatomic, strong) PHCachingImageManager *imageManager;
 
 @property (nonatomic, assign) CGRect previousPreheatRect;
@@ -91,9 +92,16 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
         [self.collectionView registerClass:CTAssetsGridViewFooter.class
                 forSupplementaryViewOfKind:UICollectionElementKindSectionFooter
                        withReuseIdentifier:CTAssetsGridViewFooterIdentifier];
-        
+
+        [self.collectionView registerClass:CTAssetsGridViewHeader.class
+                forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
+                       withReuseIdentifier:CTAssetsGridViewHeaderIdentifier];
+
         [self addNotificationObserver];
     }
+    
+    self.groupedAssets = [NSMutableArray array];
+    self.indexPathsForAsset = [NSMutableDictionary dictionary];
     
     return self;
 }
@@ -161,7 +169,11 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 - (PHAsset *)assetAtIndexPath:(NSIndexPath *)indexPath
 {
-    return (self.fetchResult.count > 0) ? self.fetchResult[indexPath.item] : nil;
+    if (self.fetchResult.count == 0)
+        return nil;
+    
+    return [[self.groupedAssets objectAtIndex:indexPath.section] objectAtIndex:indexPath.row];
+//    return (self.fetchResult.count > 0) ? self.fetchResult[indexPath.item] : nil;
 }
 
 
@@ -197,11 +209,61 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
                                   options:self.picker.assetsFetchOptions];
     
     self.fetchResult = fetchResult;
+    [self regroupAssets];
+    
     [self reloadData];
 }
 
+- (void)regroupAssets {
+    [self.groupedAssets removeAllObjects];
+    [self.indexPathsForAsset removeAllObjects];
+ 
+    NSDate *dateKey;
+    NSMutableArray *assetList = [NSMutableArray array];
+    NSIndexPath *indexPath;
+    for (PHAsset *asset in self.fetchResult) {
+        NSDate *createdAt = asset.creationDate;
+        
+        if (!dateKey || [self sameDay:createdAt with:dateKey]) {
+            [assetList addObject:asset];
+            dateKey = createdAt;
+        } else {
+            if (assetList.count > 0) {
+                [self.groupedAssets addObject:assetList];
+                assetList = [NSMutableArray array];
+            }
+            [assetList addObject:asset];
+            dateKey = createdAt;
+        }
+        indexPath = [NSIndexPath indexPathForItem:assetList.count-1 inSection:self.groupedAssets.count];
+        [self.indexPathsForAsset setObject:indexPath forKey:asset];
+    }
+    
+    if (assetList.count > 0) {
+        [self.groupedAssets addObject:assetList];
+    }
+}
 
+- (BOOL)sameDay:(NSDate *)date with:(NSDate *)otherDay {
+    // From progrmr's answer...
+    NSCalendar* calendar = [NSCalendar currentCalendar];
+    
+    unsigned unitFlags = NSCalendarUnitYear | NSCalendarUnitMonth | NSCalendarUnitDay;
+    NSDateComponents* comp1 = [calendar components:unitFlags fromDate:date];
+    NSDateComponents* comp2 = [calendar components:unitFlags fromDate:otherDay];
+    
+    return [comp1 year] == [comp2 year] && [comp1 month] == [comp2 month] && [comp1 day] == [comp2 day];
+}
 
+- (NSIndexPath *)indexPathForIndex:(NSInteger)index {
+    PHAsset *asset = [self.fetchResult objectAtIndex:index];
+    return [self.indexPathsForAsset objectForKey:asset];
+}
+
+- (NSInteger)indexForIndexPath:(NSIndexPath *)indexPath {
+    PHAsset *asset = [self assetAtIndexPath:indexPath];
+    return [self.fetchResult indexOfObject:asset];
+}
 
 #pragma mark - Collection view layout
 
@@ -210,13 +272,6 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
     UITraitCollection *trait = self.traitCollection;
     CGSize contentSize = self.view.bounds.size;
     UICollectionViewLayout *layout;
-
-    NSArray *attributes = [self.collectionView.collectionViewLayout layoutAttributesForElementsInRect:self.collectionView.bounds];
-    UICollectionViewLayoutAttributes *attr = (UICollectionViewLayoutAttributes*)attributes.firstObject;
-    // new content size should be at least of first item size, else ignoring
-    if (contentSize.width < attr.size.width || contentSize.height < attr.size.height) {
-        return;
-    }
 
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:collectionViewLayoutForContentSize:traitCollection:)]) {
         layout = [self.picker.delegate assetsPickerController:self.picker collectionViewLayoutForContentSize:contentSize traitCollection:trait];
@@ -246,7 +301,9 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
  
     if (shouldScrollToBottom)
     {
-        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:self.fetchResult.count-1 inSection:0];
+        NSInteger lastSection = self.groupedAssets.count - 1;
+        NSInteger lastRow = [[self.groupedAssets objectAtIndex:lastSection] count] - 1;
+        NSIndexPath *indexPath = [NSIndexPath indexPathForItem:lastRow inSection:lastSection];
         [self.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionTop animated:NO];
     }
 }
@@ -302,6 +359,8 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 - (void)photoLibraryDidChange:(PHChange *)changeInstance
 {
+    return;
+    
     // Call might come on any background queue. Re-dispatch to the main queue to handle it.
     dispatch_async(dispatch_get_main_queue(), ^{
         
@@ -309,11 +368,12 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
         
         if (changeDetails)
         {
-            self.fetchResult = changeDetails.fetchResultAfterChanges;
+            self.fetchResult = [changeDetails fetchResultAfterChanges];
+            [self regroupAssets];
             
             UICollectionView *collectionView = self.collectionView;
             
-            if (!changeDetails.hasIncrementalChanges || changeDetails.hasMoves)
+            if (![changeDetails hasIncrementalChanges] || [changeDetails hasMoves])
             {
                 [collectionView reloadData];
                 [self resetCachedAssetImages];
@@ -324,13 +384,13 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
                 NSArray *insertedPaths;
                 NSArray *changedPaths;
                 
-                NSIndexSet *removedIndexes = changeDetails.removedIndexes;
+                NSIndexSet *removedIndexes = [changeDetails removedIndexes];
                 removedPaths = [removedIndexes ctassetsPickerIndexPathsFromIndexesWithSection:0];
                 
-                NSIndexSet *insertedIndexes = changeDetails.insertedIndexes;
+                NSIndexSet *insertedIndexes = [changeDetails insertedIndexes];
                 insertedPaths = [insertedIndexes ctassetsPickerIndexPathsFromIndexesWithSection:0];
                 
-                NSIndexSet *changedIndexes = changeDetails.changedIndexes;
+                NSIndexSet *changedIndexes = [changeDetails changedIndexes];
                 changedPaths = [changedIndexes ctassetsPickerIndexPathsFromIndexesWithSection:0];
                 
                 BOOL shouldReload = NO;
@@ -361,17 +421,17 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
                 {
                     // if we have incremental diffs, tell the collection view to animate insertions and deletions
                     [collectionView performBatchUpdates:^{
-                        if (removedPaths.count)
+                        if ([removedPaths count])
                         {
                             [collectionView deleteItemsAtIndexPaths:[removedIndexes ctassetsPickerIndexPathsFromIndexesWithSection:0]];
                         }
                         
-                        if (insertedPaths.count)
+                        if ([insertedPaths count])
                         {
                             [collectionView insertItemsAtIndexPaths:[insertedIndexes ctassetsPickerIndexPathsFromIndexesWithSection:0]];
                         }
                         
-                        if (changedPaths.count)
+                        if ([changedPaths count])
                         {
                             [collectionView reloadItemsAtIndexPaths:[changedIndexes ctassetsPickerIndexPathsFromIndexesWithSection:0] ];
                         }
@@ -382,7 +442,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
                 }
             }
             
-            [self.footer bind:self.fetchResult];
+//            [self.footer bind:self.fetchResult];
             
             if (self.fetchResult.count == 0)
                 [self showNoAssets];
@@ -428,7 +488,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 - (void)assetsPickerDidSelectAsset:(NSNotification *)notification
 {
     PHAsset *asset = (PHAsset *)notification.object;
-    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:[self.fetchResult indexOfObject:asset] inSection:0];
+    NSIndexPath *indexPath = [self.indexPathsForAsset objectForKey:asset];
     [self.collectionView selectItemAtIndexPath:indexPath animated:NO scrollPosition:UICollectionViewScrollPositionNone];
     
     [self updateSelectionOrderLabels];
@@ -437,7 +497,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 - (void)assetsPickerDidDeselectAsset:(NSNotification *)notification
 {
     PHAsset *asset = (PHAsset *)notification.object;
-    NSIndexPath *indexPath = [NSIndexPath indexPathForItem:[self.fetchResult indexOfObject:asset] inSection:0];
+    NSIndexPath *indexPath = [self.indexPathsForAsset objectForKey:asset];
     [self.collectionView deselectItemAtIndexPath:indexPath animated:NO];
     
     [self updateSelectionOrderLabels];
@@ -479,7 +539,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
         
         CTAssetsPageViewController *vc = [[CTAssetsPageViewController alloc] initWithFetchResult:self.fetchResult];
         vc.allowsSelection = YES;
-        vc.pageIndex = indexPath.item;
+        vc.pageIndex = [self indexForIndexPath:indexPath];
         
         [self.navigationController pushViewController:vc animated:YES];
     }
@@ -512,7 +572,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 - (void)updateCachedAssetImages
 {
-    BOOL isViewVisible = [self isViewLoaded] && self.view.window != nil;
+    BOOL isViewVisible = [self isViewLoaded] && [[self view] window] != nil;
     
     if (!isViewVisible)
         return;
@@ -651,12 +711,12 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 - (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
 {
-    return 1;
+    return self.groupedAssets.count;
 }
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
-    return self.fetchResult.count;
+    return [[self.groupedAssets objectAtIndex:section] count];
 }
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
@@ -666,7 +726,6 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
                                               forIndexPath:indexPath];
     
     PHAsset *asset = [self assetAtIndexPath:indexPath];
-    
     if ([self.picker.delegate respondsToSelector:@selector(assetsPickerController:shouldEnableAsset:)])
         cell.enabled = [self.picker.delegate assetsPickerController:self.picker shouldEnableAsset:asset];
     else
@@ -701,7 +760,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
     NSInteger tag = cell.tag + 1;
     cell.tag = tag;
 
-    [self.imageManager ctassetsPickerRequestImageForAsset:asset
+    [self.imageManager requestImageForAsset:asset
                                  targetSize:targetSize
                                 contentMode:PHImageContentModeAspectFill
                                     options:self.picker.thumbnailRequestOptions
@@ -714,16 +773,34 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath
 {
-    CTAssetsGridViewFooter *footer =
-    [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionFooter
-                                       withReuseIdentifier:CTAssetsGridViewFooterIdentifier
-                                              forIndexPath:indexPath];
+    CTAssetsGridViewHeader *header = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader
+                                                                        withReuseIdentifier:CTAssetsGridViewHeaderIdentifier
+                                                                               forIndexPath:indexPath];
     
-    [footer bind:self.fetchResult];
+    PHAsset *asset = [self assetAtIndexPath:indexPath];
+    NSString *dateStr = nil;
+    NSString *ageStr = nil;
+    if ([self.picker.delegate respondsToSelector:@selector(dateStrForDate:)])
+        dateStr = [self.picker.delegate dateStrForDate:asset.creationDate];
+    if ([self.picker.delegate respondsToSelector:@selector(ageStrForDate:)])
+        ageStr = [self.picker.delegate ageStrForDate:asset.creationDate];
+
+    header.dateLabel.text = dateStr;
+    header.ageLabel.text = ageStr;
     
-    self.footer = footer;
+//    header.messageLabel.text = CTAssetsPickerLocalizedString(@"Max 9 photos for one day", nil);
     
-    return footer;
+    return header;
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
+    CGFloat width = self.view.frame.size.width;
+    CGSize size = CGSizeMake(width, 28);
+    return size;
+}
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout referenceSizeForFooterInSection:(NSInteger)section {
+    return CGSizeMake(self.view.frame.size.width, 8);
 }
 
 
@@ -733,6 +810,7 @@ NSString * const CTAssetsGridViewFooterIdentifier = @"CTAssetsGridViewFooterIden
 {
     PHAsset *asset = [self assetAtIndexPath:indexPath];
     
+    self.picker.dailyAssets = [self.groupedAssets objectAtIndex:indexPath.section];
     CTAssetsGridViewCell *cell = (CTAssetsGridViewCell *)[collectionView cellForItemAtIndexPath:indexPath];
     
     if (!cell.isEnabled)

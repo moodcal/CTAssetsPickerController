@@ -55,7 +55,7 @@
 {
     UIView *containerView = [transitionContext containerView];
     
-    UIColor *backgroundColor = [CTAssetsPageView appearance].pageBackgroundColor;
+    UIColor *backgroundColor = [[CTAssetsPageView appearance] pageBackgroundColor];
     containerView.backgroundColor = (backgroundColor) ? backgroundColor : CTAssetsPageViewPageBackgroundColor;
 
     if (self.operation == UINavigationControllerOperationPush)
@@ -63,7 +63,7 @@
         CTAssetsGridViewController *fromVC  = (CTAssetsGridViewController *)[transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
         CTAssetsPageViewController *toVC    = (CTAssetsPageViewController *)[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
         CTAssetItemViewController *iVC      = (CTAssetItemViewController *)toVC.viewControllers[0];
-        NSIndexPath *indexPath              = [NSIndexPath indexPathForItem:toVC.pageIndex inSection:0];
+        NSIndexPath *indexPath              = [fromVC indexPathForIndex:toVC.pageIndex];
         
         UIView *cellView        = [fromVC.collectionView cellForItemAtIndexPath:indexPath];
         UIImageView *imageView  = [[UIImageView alloc] initWithImage:iVC.image];
@@ -134,10 +134,10 @@
         CTAssetsPageViewController *fromVC  = (CTAssetsPageViewController *)[transitionContext viewControllerForKey:UITransitionContextFromViewControllerKey];
         CTAssetsGridViewController *toVC    = (CTAssetsGridViewController *)[transitionContext viewControllerForKey:UITransitionContextToViewControllerKey];
         CTAssetItemViewController *iVC      = (CTAssetItemViewController *)fromVC.viewControllers[0];
-        NSIndexPath *indexPath              = [NSIndexPath indexPathForItem:fromVC.pageIndex inSection:0];
+        NSIndexPath *indexPath              = [toVC indexPathForIndex:fromVC.pageIndex];
         
         // Scroll to index path
-        [toVC.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionNone animated:NO];
+        [toVC.collectionView scrollToItemAtIndexPath:indexPath atScrollPosition:UICollectionViewScrollPositionCenteredVertically animated:NO];
         [toVC.collectionView layoutIfNeeded];
         
         UIView *cellView                = [toVC.collectionView cellForItemAtIndexPath:indexPath];
