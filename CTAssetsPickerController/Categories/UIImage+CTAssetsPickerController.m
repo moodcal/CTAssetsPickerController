@@ -31,7 +31,8 @@
 
 + (UIImage *)ctassetsPickerImageNamed:(NSString *)name
 {
-    return [UIImage imageNamed:name inBundle:[NSBundle ctassetsPickerBundle] compatibleWithTraitCollection:nil];
+    return [UIImage imageNamed:name];
+//    return [UIImage imageNamed:name inBundle:[NSBundle ctassetsPickerBundle] compatibleWithTraitCollection:nil];
 }
 
 @end
