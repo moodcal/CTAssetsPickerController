@@ -514,6 +514,8 @@ NSString * const CTAssetsPickerDidDeselectAssetNotification = @"CTAssetsPickerDi
 
 - (void)selectAsset:(PHAsset *)asset
 {
+    if ([self.selectedAssets containsObject:asset]) return;
+    
     [self insertObject:asset inSelectedAssetsAtIndex:self.countOfSelectedAssets];
     [self postDidSelectAssetNotification:asset];
 }
