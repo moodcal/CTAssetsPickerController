@@ -11,7 +11,8 @@
 @implementation PHImageManager (CTAssetsPickerController)
 
 + (BOOL)ctassetsPickerNeedsiPadSupportSize {
-    return [(NSString*)[UIDevice currentDevice].model hasPrefix:@"iPad"] && UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad == false;
+    return false;
+//    return [(NSString*)[UIDevice currentDevice].model hasPrefix:@"iPad"] && UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiom.Pad == false;
 }
 
 + (CGSize)ctassetsPickerSizeForSize:(CGSize)size withMinimumDimension:(CGFloat)dimension {

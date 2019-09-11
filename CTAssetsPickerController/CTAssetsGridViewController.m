@@ -773,24 +773,35 @@ NSString * const CTAssetsGridViewHeaderIdentifier = @"CTAssetsGridViewHeaderIden
 
 - (UICollectionReusableView *)collectionView:(UICollectionView *)collectionView viewForSupplementaryElementOfKind:(NSString *)kind atIndexPath:(NSIndexPath *)indexPath
 {
-    CTAssetsGridViewHeader *header = [collectionView dequeueReusableSupplementaryViewOfKind:UICollectionElementKindSectionHeader
-                                                                        withReuseIdentifier:CTAssetsGridViewHeaderIdentifier
-                                                                               forIndexPath:indexPath];
-    
-    PHAsset *asset = [self assetAtIndexPath:indexPath];
-    NSString *dateStr = nil;
-    NSString *ageStr = nil;
-    if ([self.picker.delegate respondsToSelector:@selector(dateStrForDate:)])
-        dateStr = [self.picker.delegate dateStrForDate:asset.creationDate];
-    if ([self.picker.delegate respondsToSelector:@selector(ageStrForDate:)])
-        ageStr = [self.picker.delegate ageStrForDate:asset.creationDate];
+    NSString *identifier = kind == UICollectionElementKindSectionHeader ? CTAssetsGridViewHeaderIdentifier : CTAssetsGridViewFooterIdentifier;
+    if (kind == UICollectionElementKindSectionHeader) {
+        CTAssetsGridViewHeader *header = [collectionView dequeueReusableSupplementaryViewOfKind:kind
+                                                                            withReuseIdentifier:identifier
+                                                                                   forIndexPath:indexPath];
+        
+        PHAsset *asset = [self assetAtIndexPath:indexPath];
+        NSString *dateStr = nil;
+        NSString *ageStr = nil;
+        if ([self.picker.delegate respondsToSelector:@selector(dateStrForDate:)])
+            dateStr = [self.picker.delegate dateStrForDate:asset.creationDate];
+        if ([self.picker.delegate respondsToSelector:@selector(ageStrForDate:)])
+            ageStr = [self.picker.delegate ageStrForDate:asset.creationDate];
 
-    header.dateLabel.text = dateStr;
-    header.ageLabel.text = ageStr;
-    
-//    header.messageLabel.text = CTAssetsPickerLocalizedString(@"Max 9 photos for one day", nil);
-    
-    return header;
+        header.dateLabel.text = dateStr;
+        header.ageLabel.text = ageStr;
+        
+    //    header.messageLabel.text = CTAssetsPickerLocalizedString(@"Max 9 photos for one day", nil);
+        
+        return header;
+    } else if (kind == UICollectionElementKindSectionFooter) {
+        CTAssetsGridViewFooter *footer = [collectionView dequeueReusableSupplementaryViewOfKind:kind
+                                                                            withReuseIdentifier:identifier
+                                                                                   forIndexPath:indexPath];
+        return footer;
+
+    } else {
+        return nil;
+    }
 }
 
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section {
