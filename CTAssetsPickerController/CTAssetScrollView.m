@@ -194,37 +194,49 @@ NSString * const CTAssetScrollViewPlayerWillPauseNotification = @"CTAssetScrollV
 //        [self.selectionButton autoConstrainAttribute:ALAttributeBottom toAttribute:ALAttributeBottom ofView:self.imageView withOffset:-self.layoutMargins.bottom relation:NSLayoutRelationLessThanOrEqual];
 //    }];
 //}
+
 - (void)updateButtonsConstraints
 {
+    // ... 前面的代码不变 ...
     [self.playButton autoAlignAxis:ALAxisVertical toSameAxisOfView:self.superview];
     [self.playButton autoAlignAxis:ALAxisHorizontal toSameAxisOfView:self.superview];
     
-    // 计算底部偏移量
-    CGFloat bottomOffset = -self.layoutMargins.bottom;
+    // --- 修改开始 ---
     
-    // 核心修改：如果是 iOS 11+，需要额外加上安全区域的高度
-    if (@available(iOS 11.0, *)) {
-        // 获取当前 window 或 superview 的安全区域
-        UIEdgeInsets safeArea = self.superview.safeAreaInsets;
-        if (safeArea.bottom > 0) {
-            // 在原有的 margin 基础上，再向上偏移安全区域的高度
-            bottomOffset -= safeArea.bottom;
-        }
-    }
+    // 1. 设置优先级 (PureLayout 的 block 方式比较特殊，这里我们用原生方式设置优先级很难看，
+    // 所以我们保留 PureLayout 的外壳，但在内部做判断)
     
     [NSLayoutConstraint autoSetPriority:UILayoutPriorityDefaultLow forConstraints:^{
         [self.selectionButton autoConstrainAttribute:ALAttributeTrailing toAttribute:ALAttributeTrailing ofView:self.superview withOffset:-self.layoutMargins.right relation:NSLayoutRelationEqual];
         
-        // 使用修改后的 bottomOffset
-        [self.selectionButton autoConstrainAttribute:ALAttributeBottom toAttribute:ALAttributeBottom ofView:self.superview withOffset:bottomOffset relation:NSLayoutRelationEqual];
+        // 【核心修改】：针对 iOS 11+ 使用 safeAreaLayoutGuide
+        if (@available(iOS 11.0, *)) {
+            // 这里我们使用原生 API，因为它能自动处理 "safeArea 还没出来" 的情况
+            // 注意：这里我们约束到 self (CTAssetScrollView) 的 safeAreaLayoutGuide，而不是 superview
+            // 因为 self 本身就是铺满屏幕的 ScrollView，它的 safeArea 就是屏幕的安全区域
+            NSLayoutConstraint *bottomConstraint = [self.selectionButton.bottomAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor constant:-self.layoutMargins.bottom];
+            bottomConstraint.priority = UILayoutPriorityDefaultLow;
+            bottomConstraint.active = YES;
+        } else {
+            // iOS 10 及以下，保持原样
+            [self.selectionButton autoConstrainAttribute:ALAttributeBottom toAttribute:ALAttributeBottom ofView:self.superview withOffset:-self.layoutMargins.bottom relation:NSLayoutRelationEqual];
+        }
     }];
     
     [NSLayoutConstraint autoSetPriority:UILayoutPriorityDefaultHigh forConstraints:^{
         [self.selectionButton autoConstrainAttribute:ALAttributeTrailing toAttribute:ALAttributeTrailing ofView:self.imageView withOffset:-self.layoutMargins.right relation:NSLayoutRelationLessThanOrEqual];
         
-        // 使用修改后的 bottomOffset
-        [self.selectionButton autoConstrainAttribute:ALAttributeBottom toAttribute:ALAttributeBottom ofView:self.imageView withOffset:bottomOffset relation:NSLayoutRelationLessThanOrEqual];
+        // 【核心修改】：同上，针对 iOS 11+ 处理
+        if (@available(iOS 11.0, *)) {
+            NSLayoutConstraint *bottomConstraint = [self.selectionButton.bottomAnchor constraintEqualToAnchor:self.safeAreaLayoutGuide.bottomAnchor constant:-self.layoutMargins.bottom];
+            bottomConstraint.priority = UILayoutPriorityDefaultHigh;
+            bottomConstraint.active = YES;
+        } else {
+            [self.selectionButton autoConstrainAttribute:ALAttributeBottom toAttribute:ALAttributeBottom ofView:self.imageView withOffset:-self.layoutMargins.bottom relation:NSLayoutRelationLessThanOrEqual];
+        }
     }];
+    
+    // --- 修改结束 ---
 }
 
 - (void)updateContentFrame
