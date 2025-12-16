@@ -179,19 +179,51 @@ NSString * const CTAssetScrollViewPlayerWillPauseNotification = @"CTAssetScrollV
     [self.activityView autoAlignAxis:ALAxisHorizontal toSameAxisOfView:self.superview];
 }
 
+//- (void)updateButtonsConstraints
+//{
+//    [self.playButton autoAlignAxis:ALAxisVertical toSameAxisOfView:self.superview];
+//    [self.playButton autoAlignAxis:ALAxisHorizontal toSameAxisOfView:self.superview];
+//    
+//    [NSLayoutConstraint autoSetPriority:UILayoutPriorityDefaultLow forConstraints:^{
+//        [self.selectionButton autoConstrainAttribute:ALAttributeTrailing toAttribute:ALAttributeTrailing ofView:self.superview withOffset:-self.layoutMargins.right relation:NSLayoutRelationEqual];
+//        [self.selectionButton autoConstrainAttribute:ALAttributeBottom toAttribute:ALAttributeBottom ofView:self.superview withOffset:-self.layoutMargins.bottom relation:NSLayoutRelationEqual];
+//    }];
+//    
+//    [NSLayoutConstraint autoSetPriority:UILayoutPriorityDefaultHigh forConstraints:^{
+//        [self.selectionButton autoConstrainAttribute:ALAttributeTrailing toAttribute:ALAttributeTrailing ofView:self.imageView withOffset:-self.layoutMargins.right relation:NSLayoutRelationLessThanOrEqual];
+//        [self.selectionButton autoConstrainAttribute:ALAttributeBottom toAttribute:ALAttributeBottom ofView:self.imageView withOffset:-self.layoutMargins.bottom relation:NSLayoutRelationLessThanOrEqual];
+//    }];
+//}
 - (void)updateButtonsConstraints
 {
     [self.playButton autoAlignAxis:ALAxisVertical toSameAxisOfView:self.superview];
     [self.playButton autoAlignAxis:ALAxisHorizontal toSameAxisOfView:self.superview];
     
+    // 计算底部偏移量
+    CGFloat bottomOffset = -self.layoutMargins.bottom;
+    
+    // 核心修改：如果是 iOS 11+，需要额外加上安全区域的高度
+    if (@available(iOS 11.0, *)) {
+        // 获取当前 window 或 superview 的安全区域
+        UIEdgeInsets safeArea = self.superview.safeAreaInsets;
+        if (safeArea.bottom > 0) {
+            // 在原有的 margin 基础上，再向上偏移安全区域的高度
+            bottomOffset -= safeArea.bottom;
+        }
+    }
+    
     [NSLayoutConstraint autoSetPriority:UILayoutPriorityDefaultLow forConstraints:^{
         [self.selectionButton autoConstrainAttribute:ALAttributeTrailing toAttribute:ALAttributeTrailing ofView:self.superview withOffset:-self.layoutMargins.right relation:NSLayoutRelationEqual];
-        [self.selectionButton autoConstrainAttribute:ALAttributeBottom toAttribute:ALAttributeBottom ofView:self.superview withOffset:-self.layoutMargins.bottom relation:NSLayoutRelationEqual];
+        
+        // 使用修改后的 bottomOffset
+        [self.selectionButton autoConstrainAttribute:ALAttributeBottom toAttribute:ALAttributeBottom ofView:self.superview withOffset:bottomOffset relation:NSLayoutRelationEqual];
     }];
     
     [NSLayoutConstraint autoSetPriority:UILayoutPriorityDefaultHigh forConstraints:^{
         [self.selectionButton autoConstrainAttribute:ALAttributeTrailing toAttribute:ALAttributeTrailing ofView:self.imageView withOffset:-self.layoutMargins.right relation:NSLayoutRelationLessThanOrEqual];
-        [self.selectionButton autoConstrainAttribute:ALAttributeBottom toAttribute:ALAttributeBottom ofView:self.imageView withOffset:-self.layoutMargins.bottom relation:NSLayoutRelationLessThanOrEqual];
+        
+        // 使用修改后的 bottomOffset
+        [self.selectionButton autoConstrainAttribute:ALAttributeBottom toAttribute:ALAttributeBottom ofView:self.imageView withOffset:bottomOffset relation:NSLayoutRelationLessThanOrEqual];
     }];
 }
 
